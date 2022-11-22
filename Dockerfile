@@ -20,4 +20,4 @@ RUN export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" && kubectl krew install re
 RUN cd /tmp && wget https://get.helm.sh/helm-v3.10.2-linux-amd64.tar.gz && tar -zxvf helm-v3.10.2-linux-amd64.tar.gz && mv linux-amd64/helm /usr/local/bin/helm && mkdir -p /etc/bash_completion.d && helm completion bash > /etc/bash_completion.d/helm
 
 # k9s install
-RUN cd /tmp && wget https://github.com/derailed/k9s/releases/download/v0.26.7/k9s_Linux_x86_64.tar.gz && tar -zxvf k9s_Linux_x86_64.tar.gz && mv k9s /usr/local/bin/k9s
+RUN cd /tmp && wget https://github.com/derailed/k9s/releases/download/v0.26.7/k9s_Linux_x86_64.tar.gz && tar -zxvf k9s_Linux_x86_64.tar.gz && mv k9s /usr/local/bin/k9s && apt-get install -y nano vi
