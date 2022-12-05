@@ -22,5 +22,5 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Docker check
-      run: docker version
+    - name: Docker lint
+      run: docker run --rm -i hadolint/hadolint < Dockerfile
