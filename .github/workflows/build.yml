@@ -1,0 +1,26 @@
+name: 'Test All Environments'
+
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+    name: 'Test'
+    concurrency: 
+      group: test_group
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Docker check
+      run: docker version
