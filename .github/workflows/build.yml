@@ -6,12 +6,12 @@ on:
     - main
 
 jobs:
-  test:
+  test-ubuntu:
     strategy:
       fail-fast: false
-    name: 'Test'
+    name: 'Test Ubuntu image'
     concurrency: 
-      group: test_group
+      group: test_ubuntu_group
       cancel-in-progress: true
     runs-on: ubuntu-latest
     defaults:
@@ -22,16 +22,35 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Docker lint
+    - name: Dockerfile lint
       run: docker run --rm -i -v "$PWD:/data:ro" -w /data hadolint/hadolint hadolint Dockerfile # docker run --rm -i hadolint/hadolint < Dockerfile
-
-  build:
-    needs: test
+  
+  test-alpine:
     strategy:
       fail-fast: false
-    name: 'Build'
+    name: 'Test Alpine image'
     concurrency: 
-      group: build_group
+      group: test_alpine_group
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Dockerfile lint
+      run: docker run --rm -i -v "$PWD:/data:ro" -w /data hadolint/hadolint hadolint Dockerfile.alpine
+
+  build-ubuntu:
+    needs: test-ubuntu
+    strategy:
+      fail-fast: false
+    name: 'Build and push ubuntu image'
+    concurrency: 
+      group: build_ubuntu_group
       cancel-in-progress: true
     runs-on: ubuntu-latest
     defaults:
@@ -51,7 +70,42 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Push the fresh image
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      with:
+        images: ncsystems/kook
+      
+    - name: Build and push Docker ubuntu image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: |
+          ncsystems/kook:ubuntu
+        labels: ${{ steps.meta.outputs.labels }}
+
+  build-alpine:
+    needs: test-ubuntu
+    strategy:
+      fail-fast: false
+    name: 'Build and push alpine image'
+    concurrency: 
+      group: build_alpine_group
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -63,11 +117,12 @@ jobs:
       with:
         images: ncsystems/kook
       
-    - name: Build and push Docker image
+    - name: Build and push Docker ubuntu image
       uses: docker/build-push-action@v2
       with:
         context: .
+        file: ./Dockerfile.alpine
         push: true
         tags: |
-          ncsystems/kook:latest
+          ncsystems/kook:alpine
         labels: ${{ steps.meta.outputs.labels }}

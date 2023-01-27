@@ -1,0 +1,22 @@
+# FROM alpine:3.17
+FROM frolvlad/alpine-glibc:alpine-3.17_glibc-2.34
+
+ENV EKSCTL_VERSION v0.120.0
+ENV KUBECTL_VERSION v1.25.4
+ENV HELM_VERSION v3.10.2
+ENV K9S_VERSION v0.26.7
+ENV HELM_DIFF_VERSION=3.6.0
+ENV HELM_SECRETS_VERSION=4.2.2
+
+SHELL ["/bin/ash", "-c", "-o", "pipefail"]
+WORKDIR /tmp
+RUN apk add --no-cache ca-certificates wget unzip jq git nano micro groff ncurses \
+    && wget -q "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -O "awscliv2.zip" && unzip awscliv2.zip && rm awscliv2.zip && ./aws/install && rm -rf /tmp/aws \
+    && wget -q "https://github.com/weaveworks/eksctl/releases/download/$EKSCTL_VERSION/eksctl_Linux_amd64.tar.gz" && tar -zxvf eksctl_Linux_amd64.tar.gz && rm eksctl_Linux_amd64.tar.gz && mv eksctl /usr/local/bin \
+    && wget -q "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && rm ./kubectl \
+    && OS="$(uname | tr '[:upper:]' '[:lower:]')" && ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" && KREW="krew-${OS}_${ARCH}" && wget -q "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" && tar zxvf "${KREW}.tar.gz" && ./"${KREW}" install krew && echo 'export PATH=${KREW_ROOT:-$HOME/.krew}/bin:$PATH' >> /root/.bashrc \
+    && export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" && kubectl krew install resource-capacity && kubectl krew install ctx && kubectl krew install ns && kubectl krew install konfig && kubectl krew install score \
+    && wget -q https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz && tar -zxvf helm-$HELM_VERSION-linux-amd64.tar.gz && rm helm-$HELM_VERSION-linux-amd64.tar.gz && mv linux-amd64/helm /usr/local/bin/helm && rm -rf linux-amd64/ \
+    && helm plugin install https://github.com/databus23/helm-diff --version v${HELM_DIFF_VERSION} && helm plugin install https://github.com/jkroepke/helm-secrets --version v${HELM_SECRETS_VERSION} \
+    && wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -zxvf k9s_Linux_x86_64.tar.gz && mv k9s /usr/local/bin/k9s && rm k9s_Linux_x86_64.tar.gz
+WORKDIR /root

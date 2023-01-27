@@ -3,3 +3,4 @@ failure-threshold: warning
 override:
   info:
     - DL3008
+    - DL3018
