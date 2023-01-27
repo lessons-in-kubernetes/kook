@@ -21,8 +21,8 @@ docker run -it -v ~/.aws/credentials:/root/.aws/credentials -v ~/.aws/config:/ro
 Or you can make aliases for frequent usage:
 
 ```bash
-alias kook-ubuntu=`docker run -it -v ~/.aws/credentials:/root/.aws/credentials -v ~/.aws/config:/root/.aws/config -v ~/.kube/config:/root/.kube/config ncsystems/kook:ubuntu /bin/bash`
-alias kook-alpine=`docker run -it -v ~/.aws/credentials:/root/.aws/credentials -v ~/.aws/config:/root/.aws/config -v ~/.kube/config:/root/.kube/config ncsystems/kook:alpine /bin/ash`
+alias kook-ubuntu='docker run -it -v ~/.aws/credentials:/root/.aws/credentials -v ~/.aws/config:/root/.aws/config -v ~/.kube/config:/root/.kube/config ncsystems/kook:ubuntu /bin/bash'
+alias kook-alpine='docker run -it -v ~/.aws/credentials:/root/.aws/credentials -v ~/.aws/config:/root/.aws/config -v ~/.kube/config:/root/.kube/config ncsystems/kook:alpine /bin/ash'
 ```
 
 ## About
